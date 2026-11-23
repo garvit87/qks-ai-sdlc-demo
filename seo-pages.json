@@ -1,5 +1,6 @@
 {
   "pages": [
-    { "path": "index.html", "type": "home" }
+    { "path": "index.html", "type": "home" },
+    { "path": "market-research/spark-matrix-marketplace-development-platform-q4-2024/index.html", "type": "report" }
   ]
 }
