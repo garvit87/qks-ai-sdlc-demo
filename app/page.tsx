@@ -240,8 +240,8 @@ export default function HomePage() {
                     <span>Market Name</span>
                   </div>
                 </div>
+                <p className="sm-badge-caption">Leadership badge</p>
               </div>
-              <figcaption>Leadership badge</figcaption>
             </figure>
             <figure className="sm-badge-item">
               <div className="sm-badge-card">
@@ -259,8 +259,8 @@ export default function HomePage() {
                     <span>Market Name</span>
                   </div>
                 </div>
+                <p className="sm-badge-caption">Ace Performer</p>
               </div>
-              <figcaption>Ace Performer</figcaption>
             </figure>
             <figure className="sm-badge-item">
               <div className="sm-badge-card">
@@ -278,8 +278,8 @@ export default function HomePage() {
                     <span>Market Name</span>
                   </div>
                 </div>
+                <p className="sm-badge-caption">Emerging Innovator</p>
               </div>
-              <figcaption>Emerging Innovator</figcaption>
             </figure>
           </div>
         </div>

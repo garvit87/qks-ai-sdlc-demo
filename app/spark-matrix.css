@@ -1,5 +1,15 @@
 /* SPARK Matrix homepage (KAN-5). Every class is prefixed sm-. Brand tokens come from globals.css. */
 
+:root {
+  --sm-content: min(calc(0.8 * (100vw - 32px) - 32px), 1376px);
+}
+
+@media (max-width: 991px) {
+  :root {
+    --sm-content: 100%;
+  }
+}
+
 /* ---------- Shared ---------- */
 
 .sm-section {
@@ -9,7 +19,7 @@
 }
 
 .sm-container {
-  max-width: 1120px;
+  max-width: var(--sm-content);
   margin: 0 auto;
 }
 
@@ -139,7 +149,7 @@
 .sm-hero-inner {
   position: relative;
   z-index: 1;
-  max-width: 1120px;
+  max-width: var(--sm-content);
   margin: 0 auto;
 }
 
@@ -170,7 +180,7 @@
 
 .sm-tablet {
   position: relative;
-  max-width: 1080px;
+  max-width: var(--sm-content);
   margin: 56px auto 0;
   padding: 22px;
   border-radius: 36px;
@@ -332,59 +342,61 @@
 /* ---------- 5. Stand out panel ---------- */
 
 .sm-stand {
-  max-width: 1080px;
+  max-width: var(--sm-content);
   margin: 0 auto;
-  padding: 72px 64px;
-  border-radius: 40px;
-  background: linear-gradient(90deg, #0e2a5c 0%, #1f4e8c 45%, #4c9be8 100%);
+  padding: 40px;
+  border-radius: 60px;
+  background: linear-gradient(92.78deg, #052850 0.41%, #3da5eb 93.07%);
   color: #ffffff;
 }
 
 .sm-stand-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 48px;
+  gap: 0;
   align-items: start;
 }
 
 .sm-stand .sm-h2 {
+  max-width: 360px;
   color: #ffffff;
 }
 
 .sm-stand-intro {
-  margin-top: 18px;
+  margin-top: 20px;
   font-size: 16px;
   font-weight: 700;
 }
 
 .sm-stand-text {
-  margin-top: 12px;
+  margin-top: 8px;
+  max-width: 470px;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.55;
   color: rgba(255, 255, 255, 0.92);
 }
 
 .sm-glass {
-  padding: 28px 30px;
+  padding: 30px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 20px;
+  border-radius: 24px;
   background: rgba(255, 255, 255, 0.14);
 }
 
 .sm-glass + .sm-glass {
-  margin-top: 24px;
+  margin-top: 20px;
 }
 
 .sm-glass h3 {
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
   color: #ffffff;
 }
 
 .sm-glass p {
   margin-top: 10px;
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.55;
   color: rgba(255, 255, 255, 0.92);
 }
 
@@ -396,7 +408,7 @@
   position: relative;
   padding-left: 18px;
   margin-top: 8px;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.55;
   color: rgba(255, 255, 255, 0.92);
 }
@@ -442,6 +454,8 @@
 .sm-badges-inner {
   position: relative;
   z-index: 1;
+  max-width: var(--sm-content);
+  margin: 0 auto;
   text-align: center;
 }
 
@@ -456,111 +470,143 @@
 
 .sm-badge-row {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 40px;
-  margin-top: 56px;
+  gap: clamp(28px, 7.8%, 120px);
+  margin-top: 40px;
 }
 
 .sm-badge-item {
-  width: 220px;
+  flex: 0 0 auto;
+  width: clamp(200px, 21%, 300px);
   margin: 0;
 }
 
 .sm-badge-card {
+  container-type: inline-size;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 242px;
+  padding: 9% 0 7%;
   border-radius: 16px;
   background: #ffffff;
-  box-shadow: 0 14px 34px rgba(5, 40, 80, 0.12);
+  box-shadow: 0 8px 28px rgba(5, 40, 80, 0.1);
 }
 
-.sm-badge-item figcaption {
-  margin-top: 16px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #052850;
+.sm-badge-caption {
+  margin-top: 7cqw;
+  font-size: 5.4cqw;
+  font-weight: 500;
+  color: #011f41;
 }
 
 .sm-badge {
   --sm-accent: #2e8b7a;
+  --sm-fill: #ffffff;
+  --sm-ink: #011f41;
   display: flex;
   flex-direction: column;
-  width: 160px;
-  height: 190px;
-  overflow: hidden;
-  border: 1px solid #d5dde6;
-  border-radius: 6px;
-  background: #ffffff;
-  box-shadow: 0 4px 12px rgba(5, 40, 80, 0.1);
+  width: 70%;
+  aspect-ratio: 162 / 157;
+  border-radius: 3cqw;
+  background: var(--sm-fill);
+  box-shadow: 0 1cqw 3cqw rgba(5, 40, 80, 0.18);
   text-align: left;
+}
+
+.sm-badge--leader {
+  border: 1px solid #c9d3de;
 }
 
 .sm-badge--ace {
   --sm-accent: #2f6fb5;
+  --sm-fill: linear-gradient(160deg, #1d4e8f 0%, #3f8fd8 100%);
+  --sm-ink: #ffffff;
 }
 
 .sm-badge--innovator {
   --sm-accent: #5b3cc4;
+  --sm-fill: linear-gradient(160deg, #3a228f 0%, #7a4fe0 100%);
+  --sm-ink: #ffffff;
 }
 
 .sm-badge-band {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 10px 10px 14px;
-  background: var(--sm-accent);
+  gap: 1cqw;
+  padding: 4cqw 4.5cqw 3.5cqw;
+  border-radius: 3cqw 3cqw 0 0;
   color: #ffffff;
 }
 
+.sm-badge--leader .sm-badge-band {
+  background: linear-gradient(90deg, #0e2a5c 0%, #2e8b7a 100%);
+}
+
 .sm-badge-logo {
-  font-size: 12px;
+  font-size: 6.2cqw;
   font-weight: 800;
   letter-spacing: 0.01em;
 }
 
 .sm-badge-year {
-  font-size: 9px;
+  font-size: 3.9cqw;
   font-weight: 600;
-  opacity: 0.92;
+  opacity: 0.95;
 }
 
 .sm-badge-ribbon {
   position: relative;
   z-index: 1;
-  margin: -8px 10px 0;
-  padding: 6px 4px;
-  border: 1px solid #d5dde6;
+  margin: 0;
+  padding: 1.6cqw 1cqw;
+  border-top: 1px solid #c9d3de;
+  border-bottom: 1px solid #c9d3de;
   background: #ffffff;
   color: var(--sm-accent);
-  font-size: 12px;
+  font-size: 5.4cqw;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
   text-align: center;
   text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sm-badge--leader .sm-badge-ribbon {
+  color: #0e2a5c;
+  font-size: 6.4cqw;
+}
+
+.sm-badge--ace .sm-badge-ribbon,
+.sm-badge--innovator .sm-badge-ribbon {
+  margin: 0 -4cqw;
+  border: 1px solid #c9d3de;
+  box-shadow: 0 0.6cqw 1.6cqw rgba(5, 40, 80, 0.18);
 }
 
 .sm-badge-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  margin-top: auto;
-  padding: 10px;
-  color: #052850;
-  font-size: 9px;
-  line-height: 1.35;
+  gap: 0.4cqw;
+  padding: 3cqw 4.5cqw 3.5cqw;
+  color: var(--sm-ink);
+  font-size: 4.8cqw;
+  font-weight: 600;
+  line-height: 1.25;
 }
 
 .sm-badge-body strong {
-  font-size: 10px;
+  font-size: 4.8cqw;
 }
 
 .sm-badge-body em {
   font-style: normal;
   font-weight: 700;
-  color: var(--sm-accent);
+  color: inherit;
+}
+
+.sm-badge--leader .sm-badge-body em {
+  color: #2e8b7a;
 }
 
 /* ---------- 7. Global ranking ---------- */
@@ -923,7 +969,13 @@
   }
 
   .sm-badge-row {
-    gap: 28px;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .sm-badge-item {
+    width: min(260px, 80%);
   }
 
   .sm-quotes {
