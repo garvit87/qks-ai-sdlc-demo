@@ -1,0 +1,75 @@
+name: "1 · AI build ready"
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  announce:
+    name: Post build-ready comment to Jira
+    runs-on: ubuntu-latest
+    env:
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_COMMITS: ${{ github.event.pull_request.commits }}
+      PR_FILES: ${{ github.event.pull_request.changed_files }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Make sure the engineer-approved label exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh label create engineer-approved --color 2EA44F --description "Vayasoft engineer has reviewed and approved this change" --force
+
+      - name: Resolve Jira key, author and time
+        id: meta
+        run: |
+          KEY=$(printf '%s\n' "$PR_TITLE" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1 || true)
+          if [ -z "$KEY" ]; then
+            KEY=$(printf '%s\n' "$PR_BRANCH" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1 || true)
+          fi
+          AUTHOR=$(git log -1 --format=%an "$PR_HEAD_SHA")
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+          echo "author=$AUTHOR" >> "$GITHUB_OUTPUT"
+          echo "time=$(TZ=Asia/Kolkata date '+%d %b %Y, %I:%M %p IST')" >> "$GITHUB_OUTPUT"
+
+      - name: Write Jira comment
+        env:
+          KEY: ${{ steps.meta.outputs.key }}
+          AUTHOR: ${{ steps.meta.outputs.author }}
+          NOW: ${{ steps.meta.outputs.time }}
+        run: |
+          TITLE_SAFE="${PR_TITLE//|/-}"
+          cat > "$RUNNER_TEMP/jira-comment.md" <<EOF
+          h3. (/) AI agent build ready for review
+
+          ||Item||Detail||
+          |Pull request|[#${PR_NUMBER} ${TITLE_SAFE}|${PR_URL}]|
+          |Branch|${PR_BRANCH}|
+          |Commits|${PR_COMMITS}|
+          |Files changed|${PR_FILES}|
+          |Built by|${AUTHOR}|
+          |Time|${NOW}|
+
+          Next: a Vayasoft engineer reviews the change.
+          EOF
+          node scripts/jira.mjs comment "$KEY" "$RUNNER_TEMP/jira-comment.md"
+
+      - name: Move Jira issue to In Progress
+        env:
+          KEY: ${{ steps.meta.outputs.key }}
+        run: node scripts/jira.mjs transition "$KEY" "In Progress"

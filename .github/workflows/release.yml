@@ -1,0 +1,169 @@
+name: "3 · Release to live"
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    name: Resolve live URL
+    runs-on: ubuntu-latest
+    outputs:
+      live_url: ${{ steps.urls.outputs.live_url }}
+    steps:
+      - name: Resolve URLs
+        id: urls
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          echo "live_url=https://$OWNER.github.io/$REPO_NAME/" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Release to live
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ needs.prepare.outputs.live_url }}
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      actions: read
+      deployments: write
+    env:
+      VERSION: v1.0.${{ github.run_number }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npx vitest run
+
+      - name: Set build environment
+        env:
+          LIVE_URL: ${{ needs.prepare.outputs.live_url }}
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          {
+            echo "BASE_PATH=/$REPO_NAME"
+            echo "ENV_LABEL=LIVE"
+            echo "SITE_URL=$LIVE_URL"
+            echo "LIVE_URL=$LIVE_URL"
+          } >> "$GITHUB_ENV"
+
+      - name: Build live site
+        run: npm run build
+
+      - name: SEO · AEO · GEO checklist
+        run: npm run seo-check
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./out
+          keep_files: true
+          commit_message: "Release ${{ env.VERSION }}"
+
+      - name: Smoke test live site
+        run: node scripts/smoke-test.mjs "$LIVE_URL" "Demo replica"
+        env:
+          LIVE_URL: ${{ needs.prepare.outputs.live_url }}
+
+      - name: Resolve release metadata
+        id: meta
+        run: |
+          SHA="$GITHUB_SHA"
+          SHORT="${SHA:0:7}"
+          HEAD_MESSAGE=$(git log -1 --format=%B "$SHA")
+          KEY=$(printf '%s\n' "$HEAD_MESSAGE" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1 || true)
+          PRN=$(printf '%s\n' "$HEAD_MESSAGE" | grep -oE 'pull request #[0-9]+' | grep -oE '[0-9]+' | head -n1 || true)
+          APPROVER=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/approvals" --jq '.[0].user.login // "not required"' 2>/dev/null || echo "unknown")
+          NOW=$(TZ=Asia/Kolkata date '+%d %b %Y, %I:%M %p IST')
+          {
+            echo "short_sha=$SHORT"
+            echo "jira_key=$KEY"
+            echo "pr_number=$PRN"
+            echo "approver=$APPROVER"
+            echo "time=$NOW"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        env:
+          LIVE_URL: ${{ needs.prepare.outputs.live_url }}
+          SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+          KEY: ${{ steps.meta.outputs.jira_key }}
+          PRN: ${{ steps.meta.outputs.pr_number }}
+          APPROVER: ${{ steps.meta.outputs.approver }}
+          NOW: ${{ steps.meta.outputs.time }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          NOTES="$RUNNER_TEMP/notes.md"
+          cat > "$NOTES" <<EOF
+          Released to live: ${LIVE_URL}
+
+          - Jira: ${KEY:-none found}
+          - Commit: ${SHORT_SHA} (${GITHUB_SHA})
+          - Pull request: ${PRN:+#}${PRN:-none found}
+          - Approved by: ${APPROVER}
+          - Released at: ${NOW}
+          EOF
+          gh release create "$VERSION" --title "$VERSION" --notes-file "$NOTES" --target "$GITHUB_SHA"
+
+      - name: Write Jira release record and transition
+        env:
+          LIVE_URL: ${{ needs.prepare.outputs.live_url }}
+          SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+          KEY: ${{ steps.meta.outputs.jira_key }}
+          PRN: ${{ steps.meta.outputs.pr_number }}
+          APPROVER: ${{ steps.meta.outputs.approver }}
+          NOW: ${{ steps.meta.outputs.time }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          SEO_PASSED=$(jq -r '.passed' seo-report.json)
+          SEO_TOTAL=$(jq -r '.total' seo-report.json)
+          AEO_PASSED=$(jq -r '[.pages[].results[] | select(.group=="AEO" and .pass)] | length' seo-report.json)
+          AEO_TOTAL=$(jq -r '[.pages[].results[] | select(.group=="AEO")] | length' seo-report.json)
+          GEO_PASSED=$(jq -r '[.pages[].results[] | select(.group=="GEO" and .pass)] | length' seo-report.json)
+          GEO_TOTAL=$(jq -r '[.pages[].results[] | select(.group=="GEO")] | length' seo-report.json)
+          PR_ROW="none found"
+          if [ -n "$PRN" ]; then PR_ROW="[#${PRN}|https://github.com/${GITHUB_REPOSITORY}/pull/${PRN}]"; fi
+          cat > "$RUNNER_TEMP/jira-comment.md" <<EOF
+          h3. (/) Released to live
+
+          ||Item||Detail||
+          |Version|${VERSION}|
+          |Live URL|[${LIVE_URL}|${LIVE_URL}]|
+          |Commit|[${SHORT_SHA}|https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}]|
+          |Pull request|${PR_ROW}|
+          |Approved by|${APPROVER}|
+          |Released at|${NOW}|
+          |Pipeline run|[View run|${RUN_URL}]|
+          |SEO|${SEO_PASSED}/${SEO_TOTAL} checks|
+          |AEO|${AEO_PASSED}/${AEO_TOTAL} checks|
+          |GEO|${GEO_PASSED}/${GEO_TOTAL} checks|
+          EOF
+          node scripts/jira.mjs comment "$KEY" "$RUNNER_TEMP/jira-comment.md"
+          node scripts/jira.mjs transition "$KEY" "Done"

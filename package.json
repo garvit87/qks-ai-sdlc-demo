@@ -1,0 +1,27 @@
+{
+  "name": "qks-ai-sdlc-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo replica of the QKS Group homepage, used to show Vayasoft's AI-assisted delivery pipeline. Not the live site.",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "seo-check": "node scripts/seo-check.mjs",
+    "serve": "npx --yes serve out -l 4000"
+  },
+  "dependencies": {
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "cheerio": "1.2.0",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}

@@ -1,0 +1,316 @@
+name: "2 · Engineer review → CI/CD checks → Test environment"
+
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to deploy to the test environment"
+        required: true
+        type: number
+
+permissions:
+  contents: write
+  pull-requests: read
+  actions: read
+
+concurrency:
+  group: checks-pr-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  # a. Engineer approval recorded in Jira
+  engineer-review:
+    name: Engineer review approved
+    if: github.event_name == 'workflow_dispatch' || github.event.label.name == 'engineer-approved'
+    runs-on: ubuntu-latest
+    outputs:
+      pr_number: ${{ steps.meta.outputs.pr_number }}
+      pr_url: ${{ steps.meta.outputs.pr_url }}
+      jira_key: ${{ steps.meta.outputs.jira_key }}
+      test_url: ${{ steps.meta.outputs.test_url }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve pull request, Jira key and URLs
+        id: meta
+        env:
+          PR_NUMBER_INPUT: ${{ inputs.pr_number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          PR="${EVENT_PR_NUMBER:-$PR_NUMBER_INPUT}"
+          TITLE=$(gh pr view "$PR" --json title --jq .title)
+          BRANCH=$(gh pr view "$PR" --json headRefName --jq .headRefName)
+          URL=$(gh pr view "$PR" --json url --jq .url)
+          KEY=$(printf '%s\n' "$TITLE" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1 || true)
+          if [ -z "$KEY" ]; then
+            KEY=$(printf '%s\n' "$BRANCH" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -n1 || true)
+          fi
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          {
+            echo "pr_number=$PR"
+            echo "pr_url=$URL"
+            echo "jira_key=$KEY"
+            echo "test_url=https://$OWNER.github.io/$REPO_NAME/test/"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write Jira comment
+        env:
+          KEY: ${{ steps.meta.outputs.jira_key }}
+          PR_URL: ${{ steps.meta.outputs.pr_url }}
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+          REVIEWER: ${{ github.actor }}
+        run: |
+          NOW=$(TZ=Asia/Kolkata date '+%d %b %Y, %I:%M %p IST')
+          cat > "$RUNNER_TEMP/jira-comment.md" <<EOF
+          h3. (/) Engineer review approved
+
+          ||Item||Detail||
+          |Reviewer|${REVIEWER}|
+          |Pull request|[#${PR_NUMBER}|${PR_URL}]|
+          |Time|${NOW}|
+
+          Next: automated CI/CD checks.
+          EOF
+          node scripts/jira.mjs comment "$KEY" "$RUNNER_TEMP/jira-comment.md"
+
+  # b. Type check, unit tests, build, SEO/AEO/GEO checklist
+  build-and-test:
+    name: Build and test
+    needs: engineer-review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npx vitest run --reporter=default --reporter=json --outputFile=test-results.json
+
+      - name: Resolve test URLs
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          TEST_URL="https://$OWNER.github.io/$REPO_NAME/test/"
+          {
+            echo "BASE_PATH=/$REPO_NAME/test"
+            echo "ENV_LABEL=TEST"
+            echo "SITE_URL=$TEST_URL"
+            echo "TEST_URL=$TEST_URL"
+          } >> "$GITHUB_ENV"
+
+      - name: Build test site
+        run: npm run build
+
+      - name: SEO · AEO · GEO checklist
+        run: npm run seo-check
+
+      - name: Upload site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: out/
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            seo-report.json
+            test-results.json
+
+  # c. Dependency and secret scans
+  security:
+    name: Security scan
+    needs: engineer-review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Dependency audit (high and critical)
+        run: |
+          set -o pipefail
+          npm audit --omit=dev --audit-level=high | tee npm-audit.txt
+
+      - name: Secret scan (gitleaks)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.21.2 detect --source /repo --redact --verbose --no-banner
+
+  # d. Summary to Jira and the job summary
+  report-checks:
+    name: Report CI/CD checks
+    needs: [engineer-review, build-and-test, security]
+    runs-on: ubuntu-latest
+    env:
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      KEY: ${{ needs.engineer-review.outputs.jira_key }}
+      PR_NUMBER: ${{ needs.engineer-review.outputs.pr_number }}
+      PR_URL: ${{ needs.engineer-review.outputs.pr_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download reports
+        uses: actions/download-artifact@v4
+        with:
+          name: reports
+          path: reports
+
+      - name: Read results
+        id: results
+        run: |
+          TESTS=$(jq -r '.numPassedTests' reports/test-results.json)
+          TESTS_TOTAL=$(jq -r '.numTotalTests' reports/test-results.json)
+          SEO_PASSED=$(jq -r '.passed' reports/seo-report.json)
+          SEO_TOTAL=$(jq -r '.total' reports/seo-report.json)
+          NOW=$(TZ=Asia/Kolkata date '+%d %b %Y, %I:%M %p IST')
+          {
+            echo "tests=$TESTS"
+            echo "tests_total=$TESTS_TOTAL"
+            echo "seo_passed=$SEO_PASSED"
+            echo "seo_total=$SEO_TOTAL"
+            echo "time=$NOW"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write Jira comment and job summary
+        env:
+          TESTS: ${{ steps.results.outputs.tests }}
+          TESTS_TOTAL: ${{ steps.results.outputs.tests_total }}
+          SEO_PASSED: ${{ steps.results.outputs.seo_passed }}
+          SEO_TOTAL: ${{ steps.results.outputs.seo_total }}
+          NOW: ${{ steps.results.outputs.time }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          cat > "$RUNNER_TEMP/jira-comment.md" <<EOF
+          h3. (/) CI/CD checks passed
+
+          ||Check||Result||
+          |Build|(/) Passed|
+          |Type check|(/) Passed|
+          |Unit tests|(/) ${TESTS} passed (of ${TESTS_TOTAL})|
+          |SEO · AEO · GEO checklist|(/) ${SEO_PASSED}/${SEO_TOTAL} checks|
+          |Dependency scan|(/) No high-severity issues|
+          |Secret scan|(/) No secrets found|
+          |Pipeline run|[View run|${RUN_URL}]|
+          |Time|${NOW}|
+          EOF
+          node scripts/jira.mjs comment "$KEY" "$RUNNER_TEMP/jira-comment.md"
+
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+          ## CI/CD checks passed
+
+          | Check | Result |
+          | --- | --- |
+          | Build | Passed |
+          | Type check | Passed |
+          | Unit tests | ${TESTS} passed (of ${TESTS_TOTAL}) |
+          | SEO · AEO · GEO checklist | ${SEO_PASSED}/${SEO_TOTAL} checks |
+          | Dependency scan | No high-severity issues |
+          | Secret scan | No secrets found |
+          EOF
+
+  # e. Deploy to the test environment and smoke test
+  deploy-test:
+    name: Deploy to test
+    needs: [engineer-review, report-checks]
+    runs-on: ubuntu-latest
+    environment:
+      name: test
+      url: ${{ needs.engineer-review.outputs.test_url }}
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    env:
+      JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+      JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+      JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+      KEY: ${{ needs.engineer-review.outputs.jira_key }}
+      PR_NUMBER: ${{ needs.engineer-review.outputs.pr_number }}
+      PR_URL: ${{ needs.engineer-review.outputs.pr_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download site
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site-dir
+
+      - name: Deploy to gh-pages test folder
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site-dir
+          destination_dir: test
+          keep_files: true
+          commit_message: "Deploy PR #${{ needs.engineer-review.outputs.pr_number }} to test"
+
+      - name: Smoke test test environment
+        env:
+          TEST_URL: ${{ needs.engineer-review.outputs.test_url }}
+        run: |
+          node scripts/smoke-test.mjs "$TEST_URL" "Demo replica"
+          # Every report page in the manifest must be served with the QKS heading text.
+          jq -r '.pages[].path' seo-pages.json | while read -r path; do
+            dir="${path%index.html}"
+            node scripts/smoke-test.mjs "$TEST_URL$dir" "QKS Group"
+          done
+
+      - name: Write Jira comment and transition
+        env:
+          TEST_URL: ${{ needs.engineer-review.outputs.test_url }}
+        run: |
+          NOW=$(TZ=Asia/Kolkata date '+%d %b %Y, %I:%M %p IST')
+          cat > "$RUNNER_TEMP/jira-comment.md" <<EOF
+          h3. (/) Deployed to test environment
+
+          ||Item||Detail||
+          |Test URL|[${TEST_URL}|${TEST_URL}]|
+          |Smoke test|(/) Passed|
+          |Pull request|[#${PR_NUMBER}|${PR_URL}]|
+          |Time|${NOW}|
+
+          Next: release to live after approval.
+          EOF
+          node scripts/jira.mjs comment "$KEY" "$RUNNER_TEMP/jira-comment.md"
+          node scripts/jira.mjs transition "$KEY" "In Testing"
