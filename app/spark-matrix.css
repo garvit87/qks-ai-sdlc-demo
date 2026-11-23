@@ -1,0 +1,989 @@
+/* SPARK Matrix homepage (KAN-5). Every class is prefixed sm-. Brand tokens come from globals.css. */
+
+:root {
+  --sm-content: min(calc(0.8 * (100vw - 32px) - 32px), 1376px);
+}
+
+@media (max-width: 991px) {
+  :root {
+    --sm-content: 100%;
+  }
+}
+
+/* ---------- Shared ---------- */
+
+.sm-section {
+  position: relative;
+  padding: 96px 32px;
+  background: #ffffff;
+}
+
+.sm-container {
+  max-width: var(--sm-content);
+  margin: 0 auto;
+}
+
+.sm-h2 {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #011f41;
+}
+
+.sm-h2--center {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sm-underline {
+  display: block;
+  width: 48px;
+  height: 4px;
+  margin-top: 14px;
+  border-radius: 2px;
+  background: #011f41;
+}
+
+.sm-lead {
+  font-size: 18px;
+  color: #3d4b5c;
+}
+
+.sm-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 64px;
+  align-items: center;
+}
+
+.sm-tag {
+  display: inline-block;
+  padding: 8px 18px;
+  border: 1px solid #9aa6b5;
+  border-radius: 999px;
+  background: transparent;
+  font-size: 14px;
+  color: #052850;
+}
+
+.sm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 28px;
+  border: 1.5px solid #3da5eb;
+  border-radius: 32px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sm-btn--solid {
+  background: #3da5eb;
+  color: #ffffff;
+}
+
+.sm-btn--solid:hover {
+  background: #2b92d8;
+  border-color: #2b92d8;
+}
+
+.sm-btn--outline {
+  background: transparent;
+  color: #3da5eb;
+}
+
+.sm-btn--outline:hover {
+  background: #3da5eb;
+  color: #ffffff;
+}
+
+/* ---------- 1. Hero ---------- */
+
+.sm-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 96px 32px 170px;
+  background: linear-gradient(180deg, #f3f8fd 0%, #eef5fc 60%, #dceefa 100%);
+  text-align: center;
+  z-index: 0;
+}
+
+.sm-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(1, 31, 65, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(1, 31, 65, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  pointer-events: none;
+}
+
+.sm-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+.sm-blob--a {
+  left: -60px;
+  top: 34%;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(61, 165, 235, 0.35), rgba(61, 165, 235, 0) 70%);
+}
+
+.sm-blob--b {
+  right: -40px;
+  top: 12%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(90, 206, 188, 0.3), rgba(90, 206, 188, 0) 70%);
+}
+
+.sm-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--sm-content);
+  margin: 0 auto;
+}
+
+.sm-hero-title {
+  max-width: 760px;
+  margin: 0 auto;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: #011f41;
+}
+
+.sm-hero-lead {
+  max-width: 760px;
+  margin: 20px auto 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #3d4b5c;
+}
+
+.sm-hero-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.sm-tablet {
+  position: relative;
+  max-width: var(--sm-content);
+  margin: 56px auto 0;
+  padding: 22px;
+  border-radius: 36px;
+  background: #0b0d12;
+  box-shadow: 0 30px 60px -20px rgba(1, 31, 65, 0.35), 0 8px 24px rgba(1, 31, 65, 0.15);
+}
+
+.sm-tablet-screen {
+  overflow: hidden;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.sm-matrix {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.sm-matrix-title {
+  font-size: 17px;
+  font-weight: 600;
+  fill: #052850;
+  font-family: inherit;
+}
+
+.sm-matrix-col {
+  fill: #5b6b7d;
+}
+
+.sm-matrix-col--leaders {
+  fill: #2e9e7e;
+}
+
+.sm-matrix-axis {
+  fill: #052850;
+}
+
+.sm-matrix-brand {
+  fill: #011f41;
+}
+
+.sm-matrix-point {
+  fill: #052850;
+}
+
+.sm-matrix-legend {
+  fill: #3d4b5c;
+}
+
+/* ---------- 2. What is SPARK Matrix ---------- */
+
+.sm-what {
+  position: relative;
+  z-index: 1;
+  margin-top: -60px;
+  padding: 96px 32px;
+  background: #ffffff;
+  border-radius: 48px 48px 0 0;
+}
+
+.sm-what-col {
+  max-width: 560px;
+  margin: 0;
+}
+
+.sm-what-col p {
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3d4b5c;
+}
+
+.sm-dims {
+  margin: 8px 0 8px;
+}
+
+.sm-dims li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #011f41;
+}
+
+.sm-dims li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0.65em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #011f41;
+}
+
+/* ---------- 3 + 4. Regional and industry ---------- */
+
+.sm-carousel {
+  position: relative;
+}
+
+.sm-carousel-card {
+  padding: 20px;
+  border: 1px solid #e3e8ef;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(5, 40, 80, 0.12);
+}
+
+.sm-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  transform: translateY(-50%);
+  border: 1px solid #d5dde6;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #052850;
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(5, 40, 80, 0.1);
+}
+
+.sm-arrow--prev {
+  left: -18px;
+}
+
+.sm-arrow--next {
+  right: -18px;
+}
+
+.sm-split-copy .sm-tag {
+  margin-bottom: 20px;
+}
+
+.sm-split-copy p {
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3d4b5c;
+}
+
+.sm-split-copy .sm-underline {
+  margin-bottom: 0;
+}
+
+.sm-split-copy .sm-h2 + .sm-underline {
+  margin-top: 14px;
+}
+
+/* ---------- 5. Stand out panel ---------- */
+
+.sm-stand {
+  max-width: var(--sm-content);
+  margin: 0 auto;
+  padding: 40px;
+  border-radius: 60px;
+  background: linear-gradient(92.78deg, #052850 0.41%, #3da5eb 93.07%);
+  color: #ffffff;
+}
+
+.sm-stand-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  align-items: start;
+}
+
+.sm-stand .sm-h2 {
+  max-width: 360px;
+  color: #ffffff;
+}
+
+.sm-stand-intro {
+  margin-top: 20px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.sm-stand-text {
+  margin-top: 8px;
+  max-width: 470px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.sm-glass {
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.sm-glass + .sm-glass {
+  margin-top: 20px;
+}
+
+.sm-glass h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sm-glass p {
+  margin-top: 10px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.sm-glass ul {
+  margin-top: 12px;
+}
+
+.sm-glass li {
+  position: relative;
+  padding-left: 18px;
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.sm-glass li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.sm-glass p + ul {
+  margin-top: 12px;
+}
+
+.sm-glass ul + p {
+  margin-top: 12px;
+}
+
+/* ---------- 6. Badges ---------- */
+
+.sm-badges {
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.sm-badges-glow {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: 760px;
+  height: 380px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(61, 165, 235, 0.22), rgba(61, 165, 235, 0));
+  pointer-events: none;
+}
+
+.sm-badges-inner {
+  position: relative;
+  z-index: 1;
+  max-width: var(--sm-content);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sm-badges-inner .sm-tag {
+  margin-bottom: 20px;
+}
+
+.sm-badges-inner .sm-lead {
+  max-width: 760px;
+  margin: 16px auto 0;
+}
+
+.sm-badge-row {
+  display: flex;
+  justify-content: center;
+  gap: clamp(28px, 7.8%, 120px);
+  margin-top: 40px;
+}
+
+.sm-badge-item {
+  flex: 0 0 auto;
+  width: clamp(200px, 21%, 300px);
+  margin: 0;
+}
+
+.sm-badge-card {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 9% 0 7%;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 28px rgba(5, 40, 80, 0.1);
+}
+
+.sm-badge-caption {
+  margin-top: 7cqw;
+  font-size: 5.4cqw;
+  font-weight: 500;
+  color: #011f41;
+}
+
+.sm-badge {
+  --sm-accent: #2e8b7a;
+  --sm-fill: #ffffff;
+  --sm-ink: #011f41;
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+  aspect-ratio: 162 / 157;
+  border-radius: 3cqw;
+  background: var(--sm-fill);
+  box-shadow: 0 1cqw 3cqw rgba(5, 40, 80, 0.18);
+  text-align: left;
+}
+
+.sm-badge--leader {
+  border: 1px solid #c9d3de;
+}
+
+.sm-badge--ace {
+  --sm-accent: #2f6fb5;
+  --sm-fill: linear-gradient(160deg, #1d4e8f 0%, #3f8fd8 100%);
+  --sm-ink: #ffffff;
+}
+
+.sm-badge--innovator {
+  --sm-accent: #5b3cc4;
+  --sm-fill: linear-gradient(160deg, #3a228f 0%, #7a4fe0 100%);
+  --sm-ink: #ffffff;
+}
+
+.sm-badge-band {
+  display: flex;
+  flex-direction: column;
+  gap: 1cqw;
+  padding: 4cqw 4.5cqw 3.5cqw;
+  border-radius: 3cqw 3cqw 0 0;
+  color: #ffffff;
+}
+
+.sm-badge--leader .sm-badge-band {
+  background: linear-gradient(90deg, #0e2a5c 0%, #2e8b7a 100%);
+}
+
+.sm-badge-logo {
+  font-size: 6.2cqw;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.sm-badge-year {
+  font-size: 3.9cqw;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.sm-badge-ribbon {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 1.6cqw 1cqw;
+  border-top: 1px solid #c9d3de;
+  border-bottom: 1px solid #c9d3de;
+  background: #ffffff;
+  color: var(--sm-accent);
+  font-size: 5.4cqw;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sm-badge--leader .sm-badge-ribbon {
+  color: #0e2a5c;
+  font-size: 6.4cqw;
+}
+
+.sm-badge--ace .sm-badge-ribbon,
+.sm-badge--innovator .sm-badge-ribbon {
+  margin: 0 -4cqw;
+  border: 1px solid #c9d3de;
+  box-shadow: 0 0.6cqw 1.6cqw rgba(5, 40, 80, 0.18);
+}
+
+.sm-badge-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4cqw;
+  padding: 3cqw 4.5cqw 3.5cqw;
+  color: var(--sm-ink);
+  font-size: 4.8cqw;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.sm-badge-body strong {
+  font-size: 4.8cqw;
+}
+
+.sm-badge-body em {
+  font-style: normal;
+  font-weight: 700;
+  color: inherit;
+}
+
+.sm-badge--leader .sm-badge-body em {
+  color: #2e8b7a;
+}
+
+/* ---------- 7. Global ranking ---------- */
+
+.sm-rank {
+  background: #f5f7fa;
+}
+
+.sm-rank-copy p {
+  margin-top: 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3d4b5c;
+}
+
+.sm-rank-copy p strong {
+  color: #011f41;
+}
+
+.sm-rank-copy .sm-source {
+  margin-top: 20px;
+  font-size: 13px;
+  font-style: italic;
+  color: #5b6b7d;
+}
+
+.sm-rank-card {
+  position: relative;
+  padding: 40px 40px 48px;
+  border-radius: 20px;
+  background-color: #0b1e45;
+  color: #ffffff;
+  box-shadow: 0 20px 44px rgba(1, 31, 65, 0.25);
+}
+
+.sm-rank-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.sm-rank-card > * {
+  position: relative;
+}
+
+.sm-rank-card-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.sm-hbars {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 40px;
+  padding-left: 4px;
+}
+
+.sm-hbar {
+  position: relative;
+  display: block;
+  height: 12px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.sm-hbar--spark {
+  background: linear-gradient(90deg, #5acebc 0%, #3da5eb 100%);
+}
+
+.sm-hbar-label {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  margin-left: 10px;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  color: #ffffff;
+}
+
+/* ---------- 8. Research methodology ---------- */
+
+.sm-method-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 40px 32px;
+  overflow: hidden;
+  border-radius: 16px;
+  background-color: #0e2350;
+  text-align: center;
+  color: #ffffff;
+}
+
+.sm-method-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.sm-method-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.sm-method-dot--a {
+  left: 58%;
+  top: 14%;
+  width: 14px;
+  height: 14px;
+}
+
+.sm-method-dot--b {
+  left: 34%;
+  bottom: 8%;
+  width: 22px;
+  height: 22px;
+  background: radial-gradient(circle, rgba(61, 165, 235, 0.9), rgba(61, 165, 235, 0) 70%);
+}
+
+.sm-method-card-inner {
+  position: relative;
+}
+
+.sm-method-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sm-method-card-text {
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.sm-method-copy p {
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #3d4b5c;
+}
+
+.sm-method-copy .sm-method-q {
+  margin-top: 18px;
+  font-weight: 700;
+  color: #011f41;
+}
+
+.sm-method-copy .sm-btn {
+  margin-top: 28px;
+}
+
+/* ---------- 9. Trusted by vendors ---------- */
+
+.sm-quotes {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 56px;
+}
+
+.sm-quote {
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px;
+  border: 1px solid #e3e8ef;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(5, 40, 80, 0.05);
+}
+
+.sm-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #cfe6f5 0%, #3da5eb 100%);
+  color: #011f41;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sm-quote-text {
+  margin-top: 18px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #052850;
+}
+
+.sm-quote-meta {
+  margin-top: auto;
+  padding-top: 20px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #5b6b7d;
+}
+
+.sm-quote-meta strong {
+  display: block;
+  font-size: 15px;
+  color: #011f41;
+}
+
+.sm-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 40px;
+}
+
+.sm-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #c9d3de;
+}
+
+.sm-dot--active {
+  width: 32px;
+  background: #011f41;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1100px) {
+  .sm-quotes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .sm-section,
+  .sm-what,
+  .sm-rank {
+    padding: 72px 24px;
+  }
+
+  .sm-hero {
+    padding: 72px 24px 150px;
+  }
+
+  .sm-hero-title {
+    font-size: 34px;
+  }
+
+  .sm-tablet {
+    padding: 10px;
+    border-radius: 24px;
+  }
+
+  .sm-tablet-screen {
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .sm-split,
+  .sm-stand-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .sm-split--mirror .sm-split-chart {
+    order: -1;
+  }
+
+  .sm-stand {
+    padding: 48px 32px;
+    border-radius: 28px;
+  }
+
+  .sm-h2--center {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sm-section,
+  .sm-what,
+  .sm-rank {
+    padding: 64px 20px;
+  }
+
+  .sm-hero {
+    padding: 56px 20px 130px;
+  }
+
+  .sm-hero-title {
+    font-size: 30px;
+  }
+
+  .sm-hero-lead {
+    font-size: 17px;
+  }
+
+  .sm-hero .sm-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .sm-tablet {
+    margin-top: 40px;
+  }
+
+  .sm-what {
+    margin-top: -40px;
+    border-radius: 32px 32px 0 0;
+  }
+
+  .sm-carousel-card {
+    padding: 12px;
+  }
+
+  .sm-arrow--prev {
+    left: -8px;
+  }
+
+  .sm-arrow--next {
+    right: -8px;
+  }
+
+  .sm-stand {
+    padding: 36px 22px;
+    border-radius: 24px;
+  }
+
+  .sm-glass {
+    padding: 22px 20px;
+  }
+
+  .sm-rank-card {
+    padding: 28px 22px 36px;
+  }
+
+  .sm-hbar-label {
+    font-size: 10px;
+  }
+
+  .sm-badge-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .sm-badge-item {
+    width: min(260px, 80%);
+  }
+
+  .sm-quotes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sm-method-card {
+    min-height: 240px;
+    padding: 32px 22px;
+  }
+}
